@@ -1,0 +1,7 @@
+### Mastodon
+.env.*
+mastodon
+redis
+public
+postgres*
+nginx
