@@ -4,4 +4,8 @@ mastodon
 redis
 public
 postgres*
-nginx
+nginx/certs
+nginx/lebase
+nginx/tmp
+
+.fake

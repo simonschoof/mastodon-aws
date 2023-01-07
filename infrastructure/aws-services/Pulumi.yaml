@@ -1,0 +1,3 @@
+name: mastodon-aws-services
+description: All used AWS services used to run mastodon
+runtime: dotnet
