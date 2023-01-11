@@ -10,7 +10,7 @@ module Rds =
 
     let createRdsCluster () =
 
-        let rdsDbMasterPassword = resolveSecret("mastodon/rds/db-master-password")
+        let rdsDbMasterPassword = getSecret("mastodon/rds/db-master-password")
 
         let config = Config()
 
