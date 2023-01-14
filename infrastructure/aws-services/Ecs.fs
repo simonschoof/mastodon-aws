@@ -10,12 +10,47 @@ module Ecs =
         // - Cluster
         let cluster = Pulumi.Aws.Ecs.Cluster("mastodon-ecs-cluster")
 
+        // Certificate
+        let getCertificateInvokeArgs = Pulumi.Aws.Acm.GetCertificateInvokeArgs(
+            Domain = "social.simonschoof.com",
+            MostRecent = true,
+            Types = inputList[ input "AMAZON_ISSUED" ]
+        )
+        let cert = Pulumi.Aws.Acm.GetCertificate.Invoke(getCertificateInvokeArgs)
+        
         // - Application Loadbalancer
-        // let loadBalancerArgs =
-        //     LoadBalancerArgs(LoadBalancerType = input (string LoadBalancerType.Application))
+        let httpsListenerArgs = Lb.Inputs.ListenerArgs(
+            Port = 443,
+            Protocol = "HTTPS",
+            SslPolicy = "ELBSecurityPolicy-2016-08",
+            CertificateArn = io (cert.Apply(fun cert -> cert.Arn))
+        )
+
+        let defaultAction = Pulumi.Aws.LB.Inputs.ListenerDefaultActionArgs(
+            Type = "redirect",
+            Redirect = Pulumi.Aws.LB.Inputs.ListenerDefaultActionRedirectArgs(
+                Port = "443",
+                Protocol = "HTTPS",
+                StatusCode = "HTTP_301"
+            )
+        )
+
+        let httpListenerArgs = Lb.Inputs.ListenerArgs(
+            Port = 80,
+            Protocol = "HTTP",
+            DefaultActions = inputList[ input defaultAction ]
+        )
+
+        let listenerList = System.Collections.Generic.List<Lb.Inputs.ListenerArgs>()
+        listenerList.Add(httpListenerArgs)
+        listenerList.Add(httpsListenerArgs) 
+       
+        let applicationLoadBalancerArgs = Lb.ApplicationLoadBalancerArgs(
+            Listeners = listenerList
+        )
 
         let loadBalancer =
-            Lb.ApplicationLoadBalancer("mastodon-load-balancer")
+            Lb.ApplicationLoadBalancer("mastodon-load-balancer", applicationLoadBalancerArgs)
 
         // - Service
         // - Task Definitions
