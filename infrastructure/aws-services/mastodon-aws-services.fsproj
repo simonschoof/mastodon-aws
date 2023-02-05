@@ -5,6 +5,7 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="BaseInfrastructure.fs" />
     <Compile Include="Config.fs" />
     <Compile Include="Ecs.fs" />
     <Compile Include="ElastiCache.fs" />

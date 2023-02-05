@@ -10,8 +10,8 @@ let infra () =
 
   let outputs = 
     createBucket() 
-    //@ createRdsCluster()
-    //@ createElastiCacheCluster()
+    @ createRdsCluster()
+    // @ createElastiCacheCluster()
     @ createEcs()
   
   dict outputs

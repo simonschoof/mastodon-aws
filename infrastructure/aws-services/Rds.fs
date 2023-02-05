@@ -1,16 +1,18 @@
 namespace MastodonAwsServices
 
-module Rds = 
+module Rds =
 
     open Pulumi
     open Pulumi.Aws.Rds
     open Pulumi.Aws.Rds.Inputs
     open Pulumi.FSharp
     open MastodonAwsServices.Config.Secrets
+    open MastodonAwsServices.BaseInfrastructure
 
     let createRdsCluster () =
 
-        let rdsDbMasterPassword = getSecret("mastodon/rds/db-master-password")
+        let rdsDbMasterPassword =
+            getSecret ("mastodon/rds/db-master-password")
 
         let config = Config()
 
@@ -28,11 +30,12 @@ module Rds =
                     DatabaseName = "mastodon",
                     MasterUsername = "postgres",
                     MasterPassword = io (Output.CreateSecret rdsDbMasterPassword),
-                    SkipFinalSnapshot = false,
-                    FinalSnapshotIdentifier = "mastodon-rds-final-snapshot",
+                    SkipFinalSnapshot = true,
+                    //FinalSnapshotIdentifier = "mastodon-rds-final-snapshot",
                     ApplyImmediately = true,
                     DeletionProtection = false,
-                    Serverlessv2ScalingConfiguration = clusterServerlessv2ScalingConfigurationArgs
+                    Serverlessv2ScalingConfiguration = clusterServerlessv2ScalingConfigurationArgs,
+                    VpcSecurityGroupIds = inputList [ io rdsSecurityGroup.Id ]
                 )
 
             Cluster("mastodon-rds-cluster", clusterArgs)
