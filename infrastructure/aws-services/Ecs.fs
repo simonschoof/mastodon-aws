@@ -5,14 +5,16 @@ module Ecs =
     open Pulumi.FSharp
     open Pulumi.Awsx
     open Pulumi.Aws.Iam
-    open MastodonAwsServices.BaseInfrastructure
+    open MastodonAwsServices.Ec2
 
-    // TODO: Test database connection from Ecs with psql container in fargate -> Security groups needed for rds and ecs -> https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_VPC.WorkingWithRDSInstanceinaVPC.html
-    // TODO: Define security groups for rds and ecs accordingly to allow access from ecs to rds.
-    // TODO: Create a task definitions for each mastodon deployable web, streaming, sidekiq
-    // TODO: Create a rule to route requests to the streaming api to the streaming container
+    // TODO: Check if I need a public ip on the Fargate service or if the load balancer is sufficient
+    // TODO: Define security groups for rds, redis, ses and ecs accordingly to allow access from ecs to rds and redis.
+    // TODO: Define a IAM policy for the ecs task role to allow access s3
     // TODO: Provide all ENV variables for each mastodon deployable as parameter store values and secrets
     // TODO: Prepare Database manually. Create user, database and schema.
+    // TODO: Create a task definitions for each mastodon deployable web, streaming, sidekiq
+    // TODO: Create a rule to route requests to the streaming api to the streaming container
+    // TODO: Enable SES and create smtp credentials for mastodon
     // TODO: Run script before mastodon web container starts to setup or migrate database. I will do downtime deploys
     // TODO: Allow SSL connections to RDS, S3 and Redis only(https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/CHAP_Security.html#CHAP_Security.InboundPorts)
     let createEcs () =
@@ -49,17 +51,6 @@ Application Load Balancer
         let listenerList =
             System.Collections.Generic.List<Lb.Inputs.ListenerArgs>()
 
-
-        let httpsListenerArgs =
-            Lb.Inputs.ListenerArgs(
-                Port = 443,
-                Protocol = "HTTPS",
-                SslPolicy = "ELBSecurityPolicy-2016-08",
-                CertificateArn = io (cert.Apply(fun cert -> cert.Arn))
-            )
-
-        listenerList.Add(httpsListenerArgs)
-
         let defaultAction =
             Pulumi.Aws.LB.Inputs.ListenerDefaultActionArgs(
                 Type = "redirect",
@@ -73,8 +64,18 @@ Application Load Balancer
 
         let httpListenerArgs =
             Lb.Inputs.ListenerArgs(Port = 80, Protocol = "HTTP", DefaultActions = inputList [ input defaultAction ])
-
+        
         listenerList.Add(httpListenerArgs)
+
+        let httpsListenerArgs =
+            Lb.Inputs.ListenerArgs(
+                Port = 443,
+                Protocol = "HTTPS",
+                SslPolicy = "ELBSecurityPolicy-2016-08",
+                CertificateArn = io (cert.Apply(fun cert -> cert.Arn))
+            )
+
+        listenerList.Add(httpsListenerArgs)
 
         let applicationLoadBalancerArgs =
             Lb.ApplicationLoadBalancerArgs(Listeners = listenerList)

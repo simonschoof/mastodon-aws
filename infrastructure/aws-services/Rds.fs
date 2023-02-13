@@ -7,7 +7,7 @@ module Rds =
     open Pulumi.Aws.Rds.Inputs
     open Pulumi.FSharp
     open MastodonAwsServices.Config.Secrets
-    open MastodonAwsServices.BaseInfrastructure
+    open MastodonAwsServices.Ec2
 
     let createRdsCluster () =
 

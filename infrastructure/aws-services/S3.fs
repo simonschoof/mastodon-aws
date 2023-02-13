@@ -22,7 +22,7 @@ module S3 =
             RestrictPublicBuckets = true
         )
     
-        let bucketPublicAccessBlock =  BucketPublicAccessBlock("mastodon-s3-storage-public-access-block", bucketPublicAccessBlockArgs)
+        BucketPublicAccessBlock("mastodon-s3-storage-public-access-block", bucketPublicAccessBlockArgs)
           
         // Export the name of the bucket
         [("bucketName", bucket.Id :> obj)]

@@ -1,6 +1,6 @@
 namespace MastodonAwsServices
 
-module BaseInfrastructure =
+module Ec2 =
 
     open Pulumi.Aws.Ec2
     open Pulumi.Aws.Ec2.Inputs
@@ -29,6 +29,12 @@ module BaseInfrastructure =
             SecurityGroupArgs(Description = "Allow inbound traffic from ECS to RDS")
 
         SecurityGroup("rds-security-group", rdsSecurityGroupArgs)
+    
+    let elasticacheSecurityGroup =
+        let elasticacheSecurityGroupArgs =
+            SecurityGroupArgs(Description = "Allow inbound traffic from ECS to Elasticache")
+
+        SecurityGroup("elasticache-security-group", elasticacheSecurityGroupArgs)
 
 
     let ecsSecurityGroup =
@@ -50,6 +56,19 @@ module BaseInfrastructure =
             )
 
         SecurityGroupRule("mastodon-rds-inbound-tcp-security-group-rule", securityGroupRuleArgs)
+    
+    let elastiCacheSecurityGroupInboundRule =
+        let securityGroupRuleArgs =
+            SecurityGroupRuleArgs(
+                SecurityGroupId = elasticacheSecurityGroup.Id,
+                Type = "ingress",
+                FromPort = 6379,
+                ToPort = 6379,
+                Protocol = "tcp",
+                SourceSecurityGroupId = ecsSecurityGroup.Id
+            )
+
+        SecurityGroupRule("mastodon-elasticache-inbound-tcp-security-group-rule", securityGroupRuleArgs)
     
     let ecsSecurityGroupIp4AllTrafficInboundRule =
         let securityGroupRuleArgs =
