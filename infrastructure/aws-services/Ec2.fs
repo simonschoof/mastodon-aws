@@ -39,10 +39,15 @@ module Ec2 =
 
     let ecsSecurityGroup =
         let ecsSecurityGroupArgs =
-            SecurityGroupArgs(Description = "Allow outbound traffic from ECS to RDS")
+            SecurityGroupArgs(Description = "Ecs Security Group")
 
         SecurityGroup("ecs-security-group", ecsSecurityGroupArgs)
 
+    let loadBalancerSecurityGroup = 
+        let loadBalancerSecurityGroupArgs = 
+            SecurityGroupArgs(Description = "Loadbalancer Security Group")
+
+        SecurityGroup("loadbalancer-security-group", loadBalancerSecurityGroupArgs)
 
     let rdsSecurityGroupInboundRule =
         let securityGroupRuleArgs =
@@ -70,29 +75,29 @@ module Ec2 =
 
         SecurityGroupRule("mastodon-elasticache-inbound-tcp-security-group-rule", securityGroupRuleArgs)
     
-    let ecsSecurityGroupIp4AllTrafficInboundRule =
+    let ecsSecurityGroupIp4HttpTrafficInboundRule =
         let securityGroupRuleArgs =
             SecurityGroupRuleArgs(
                 SecurityGroupId = ecsSecurityGroup.Id,
                 Type = "ingress",
-                FromPort = 0,
-                ToPort = 65535,
-                Protocol = "-1",
-                CidrBlocks = inputList [ input "0.0.0.0/0" ])
+                FromPort = 80,
+                ToPort = 80,
+                Protocol = "tcp",
+                SourceSecurityGroupId = loadBalancerSecurityGroup.Id)
 
         SecurityGroupRule("mastodon-ecs-inbound-all-ip4-security-group-rule", securityGroupRuleArgs)
-    
-    let ecsSecurityGroupIp6AllTrafficInboundRule =
+
+    let ecsSecurityGroupIp4HttpsTrafficInboundRule =
         let securityGroupRuleArgs =
             SecurityGroupRuleArgs(
                 SecurityGroupId = ecsSecurityGroup.Id,
                 Type = "ingress",
-                FromPort = 0,
-                ToPort = 65535,
-                Protocol = "-1",
-                Ipv6CidrBlocks = inputList [ input "::/0" ])
-                
-        SecurityGroupRule("mastodon-ecs-inbound-all-ip6-security-group-rule", securityGroupRuleArgs)
+                FromPort = 443,
+                ToPort = 443,
+                Protocol = "tcp",
+                SourceSecurityGroupId = loadBalancerSecurityGroup.Id)
+
+        SecurityGroupRule("mastodon-ecs-inbound-https-ip4-security-group-rule", securityGroupRuleArgs)
 
     let ecsSecurityGroupIp4AllTcpOutboundRule = 
         let securityGroupRuleArgs =
@@ -106,17 +111,41 @@ module Ec2 =
 
         SecurityGroupRule("mastodon-ecs-outbound-all-tcp-ip4-security-group-rule", securityGroupRuleArgs)
 
-    let ecsSecurityGroupIp6AllTcpOutboundRule = 
+    let loadBalancerSecurityGroupIp4HttpTrafficInboundRule =
         let securityGroupRuleArgs =
             SecurityGroupRuleArgs(
-                SecurityGroupId = ecsSecurityGroup.Id,
+                SecurityGroupId = loadBalancerSecurityGroup.Id,
+                Type = "ingress",
+                FromPort = 80,
+                ToPort = 80,
+                Protocol = "tcp",
+                CidrBlocks = inputList [ input "0.0.0.0/0"] )
+
+        SecurityGroupRule("mastodon-loadbalancer-inbound-http-security-group-rule", securityGroupRuleArgs)
+
+    let loadBalancerSecurityGroupIp4HttpsTrafficInboundRule =
+        let securityGroupRuleArgs =
+            SecurityGroupRuleArgs(
+                SecurityGroupId = loadBalancerSecurityGroup.Id,
+                Type = "ingress",
+                FromPort = 443,
+                ToPort = 443,
+                Protocol = "tcp",
+                CidrBlocks = inputList [ input "0.0.0.0/0"] )
+
+        SecurityGroupRule("mastodon-loadbalancer-inbound-https-security-group-rule", securityGroupRuleArgs)
+    
+    let loadBalancerSecurityGroupIp4AllTcpOutboundRule = 
+        let securityGroupRuleArgs =
+            SecurityGroupRuleArgs(
+                SecurityGroupId = loadBalancerSecurityGroup.Id,
                 Type = "egress",
                 FromPort = 0,
                 ToPort = 65535,
                 Protocol = "tcp",
-                Ipv6CidrBlocks = inputList [ input "::/0" ])
+                CidrBlocks = inputList [ input "0.0.0.0/0" ])
 
-        SecurityGroupRule("mastodon-ecs-outbound-all-tcp-ip6-security-group-rule", securityGroupRuleArgs)
+        SecurityGroupRule("mastodon-loadbalancer-outbound-all-tcp-ip4-security-group-rule", securityGroupRuleArgs)
 
 
 //[ ("rdsSecurityGroup", rdsSecurityGroup.Id :> obj)

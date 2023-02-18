@@ -5,12 +5,12 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="Ec2.fs" />
     <Compile Include="Config.fs" />
+    <Compile Include="Ec2.fs" />
+    <Compile Include="S3.fs" />
     <Compile Include="Ecs.fs" />
     <Compile Include="ElastiCache.fs" />
     <Compile Include="Rds.fs" />
-    <Compile Include="S3.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>
   <ItemGroup>

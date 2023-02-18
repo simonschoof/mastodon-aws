@@ -7,9 +7,8 @@ module Ecs =
     open Pulumi.Aws.Iam
     open MastodonAwsServices.Ec2
 
-    // TODO: Check if I need a public ip on the Fargate service or if the load balancer is sufficient
+    // TODO: Define CloudFront with custome domain to deliver media from S3 via the S3 host alias 
     // TODO: Define security groups for rds, redis, ses and ecs accordingly to allow access from ecs to rds and redis.
-    // TODO: Define a IAM policy for the ecs task role to allow access s3
     // TODO: Provide all ENV variables for each mastodon deployable as parameter store values and secrets
     // TODO: Prepare Database manually. Create user, database and schema.
     // TODO: Create a task definitions for each mastodon deployable web, streaming, sidekiq
@@ -76,9 +75,9 @@ Application Load Balancer
             )
 
         listenerList.Add(httpsListenerArgs)
-
+        
         let applicationLoadBalancerArgs =
-            Lb.ApplicationLoadBalancerArgs(Listeners = listenerList)
+            Lb.ApplicationLoadBalancerArgs(Listeners = listenerList, SecurityGroups = inputList [io loadBalancerSecurityGroup.Id])
 
         let loadBalancer =
             Lb.ApplicationLoadBalancer("mastodon-load-balancer", applicationLoadBalancerArgs)

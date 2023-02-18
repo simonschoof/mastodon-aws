@@ -9,3 +9,7 @@ nginx/lebase
 nginx/tmp
 
 .fake
+
+just-some-commands.txt
+check-ecs-exec.sh
+mastodon-env-variable-list.txt
