@@ -10,7 +10,7 @@ let infra () =
 
   let outputs = 
    createBucketAndDistribution() 
-   //@ createRdsCluster()
+   @ createRdsCluster()
    // @ createElastiCacheCluster()
    //@  createEcs()
   

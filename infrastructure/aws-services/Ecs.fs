@@ -6,15 +6,14 @@ module Ecs =
     open Pulumi.Awsx
     open Pulumi.Aws.Iam
     open MastodonAwsServices.Ec2
-
-    // TODO: Define CloudFront with custome domain to deliver media from S3 via the S3 host alias 
-    // TODO: Define security groups for rds, redis, ses and ecs accordingly to allow access from ecs to rds and redis.
+ 
+    
     // TODO: Provide all ENV variables for each mastodon deployable as parameter store values and secrets
     // TODO: Prepare Database manually. Create user, database and schema.
     // TODO: Create a task definitions for each mastodon deployable web, streaming, sidekiq
     // TODO: Create a rule to route requests to the streaming api to the streaming container
-    // TODO: Enable SES and create smtp credentials for mastodon
     // TODO: Run script before mastodon web container starts to setup or migrate database. I will do downtime deploys
+    // TODO: Refine the outbound security group rules to only allow outbound connection to needed resources.
     // TODO: Allow SSL connections to RDS, S3 and Redis only(https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/CHAP_Security.html#CHAP_Security.InboundPorts)
     let createEcs () =
 

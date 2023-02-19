@@ -6,15 +6,10 @@ module Rds =
     open Pulumi.Aws.Rds
     open Pulumi.Aws.Rds.Inputs
     open Pulumi.FSharp
-    open MastodonAwsServices.Config.Secrets
+    open MastodonAwsServices
     open MastodonAwsServices.Ec2
 
     let createRdsCluster () =
-
-        let rdsDbMasterPassword =
-            getSecret ("mastodon/rds/db-master-password")
-
-        let config = Config()
 
         let clusterServerlessv2ScalingConfigurationArgs =
             ClusterServerlessv2ScalingConfigurationArgs(MaxCapacity = 1.0, MinCapacity = 0.5)
@@ -29,7 +24,7 @@ module Rds =
                     EngineVersion = "14.5",
                     DatabaseName = "mastodon",
                     MasterUsername = "postgres",
-                    MasterPassword = io (Output.CreateSecret rdsDbMasterPassword),
+                    MasterPassword = io (Output.CreateSecret Config.Values.rdsDbMasterPassword),
                     SkipFinalSnapshot = true,
                     //FinalSnapshotIdentifier = "mastodon-rds-final-snapshot",
                     ApplyImmediately = true,
