@@ -103,13 +103,15 @@ module Values =
 
     // Mastodon Amazon S3 and compatible
     // let s3AliasHost = "mastodonmedia.simonschoof.com"
-    // let s3Enabled= getParameter "mastodon/s3/enabled"
-    // let s3Bucket =  getParameter "mastodon/s3/bucket"
+    // let s3Enabled= true
+    // let s3Bucket =  getParameter "mastodon/s3/bucket" -> get directly from bucket
     // let awsAccessKeyId = getSecret "mastodon/s3/aws-access-key-id"
     // let awsSecretAccessKey = getSecret "mastodon/s3/aws-access-key-id"
     // let s3Region = awsConfig.Require("region")
     // let s3Protocol = "HTTPS"
-    // let s3Hostname = getParameter "mastodon/s3/hostname"
+    // let s3Hostname = getParameter "mastodon/s3/hostname" -> get directly from bucket
 
+    // Mastodon other
+    let skipPostDeploymentMigrations = true
 
     
