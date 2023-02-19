@@ -2,17 +2,17 @@
 
 open MastodonAwsServices.ElastiCache
 open MastodonAwsServices.Rds
-open MastodonAwsServices.S3
+open MastodonAwsServices.S3AndCloudFront
 open MastodonAwsServices.Ecs
 open Pulumi.FSharp
 
 let infra () =
 
   let outputs = 
-   createBucket() 
-   @ createRdsCluster()
+   createBucketAndDistribution() 
+   //@ createRdsCluster()
    // @ createElastiCacheCluster()
-   @  createEcs()
+   //@  createEcs()
   
   dict outputs
 
