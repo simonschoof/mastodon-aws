@@ -5,6 +5,7 @@ module Ec2 =
     open Pulumi.Aws.Ec2
     open Pulumi.Aws.Ec2.Inputs
     open Pulumi.FSharp
+    open MastodonAwsServices.Config.Values
 
     let defaultVpc = DefaultVpc("default-vpc")
 
@@ -28,26 +29,26 @@ module Ec2 =
         let rdsSecurityGroupArgs =
             SecurityGroupArgs(Description = "Allow inbound traffic from ECS to RDS")
 
-        SecurityGroup("rds-security-group", rdsSecurityGroupArgs)
+        SecurityGroup(prefixMastodonResource "rds-security-group", rdsSecurityGroupArgs)
     
     let elasticacheSecurityGroup =
         let elasticacheSecurityGroupArgs =
             SecurityGroupArgs(Description = "Allow inbound traffic from ECS to Elasticache")
 
-        SecurityGroup("elasticache-security-group", elasticacheSecurityGroupArgs)
+        SecurityGroup(prefixMastodonResource "elasticache-security-group", elasticacheSecurityGroupArgs)
 
 
     let ecsSecurityGroup =
         let ecsSecurityGroupArgs =
             SecurityGroupArgs(Description = "Ecs Security Group")
 
-        SecurityGroup("ecs-security-group", ecsSecurityGroupArgs)
+        SecurityGroup(prefixMastodonResource "ecs-security-group", ecsSecurityGroupArgs)
 
     let loadBalancerSecurityGroup = 
         let loadBalancerSecurityGroupArgs = 
             SecurityGroupArgs(Description = "Loadbalancer Security Group")
 
-        SecurityGroup("loadbalancer-security-group", loadBalancerSecurityGroupArgs)
+        SecurityGroup(prefixMastodonResource "loadbalancer-security-group", loadBalancerSecurityGroupArgs)
 
     let rdsSecurityGroupInboundRule =
         let securityGroupRuleArgs =
@@ -60,7 +61,7 @@ module Ec2 =
                 SourceSecurityGroupId = ecsSecurityGroup.Id
             )
 
-        SecurityGroupRule("mastodon-rds-inbound-tcp-security-group-rule", securityGroupRuleArgs)
+        SecurityGroupRule(prefixMastodonResource "rds-inbound-tcp-security-group-rule", securityGroupRuleArgs)
     
     let elastiCacheSecurityGroupInboundRule =
         let securityGroupRuleArgs =
@@ -73,7 +74,7 @@ module Ec2 =
                 SourceSecurityGroupId = ecsSecurityGroup.Id
             )
 
-        SecurityGroupRule("mastodon-elasticache-inbound-tcp-security-group-rule", securityGroupRuleArgs)
+        SecurityGroupRule(prefixMastodonResource "elasticache-inbound-tcp-security-group-rule", securityGroupRuleArgs)
     
     let ecsSecurityGroupIp4HttpTrafficInboundRule =
         let securityGroupRuleArgs =
@@ -85,7 +86,7 @@ module Ec2 =
                 Protocol = "tcp",
                 SourceSecurityGroupId = loadBalancerSecurityGroup.Id)
 
-        SecurityGroupRule("mastodon-ecs-inbound-all-ip4-security-group-rule", securityGroupRuleArgs)
+        SecurityGroupRule(prefixMastodonResource "ecs-inbound-all-ip4-security-group-rule", securityGroupRuleArgs)
 
     let ecsSecurityGroupIp4HttpsTrafficInboundRule =
         let securityGroupRuleArgs =
@@ -97,7 +98,7 @@ module Ec2 =
                 Protocol = "tcp",
                 SourceSecurityGroupId = loadBalancerSecurityGroup.Id)
 
-        SecurityGroupRule("mastodon-ecs-inbound-https-ip4-security-group-rule", securityGroupRuleArgs)
+        SecurityGroupRule(prefixMastodonResource "ecs-inbound-https-ip4-security-group-rule", securityGroupRuleArgs)
 
     let ecsSecurityGroupIp4AllTcpOutboundRule = 
         let securityGroupRuleArgs =
@@ -109,7 +110,7 @@ module Ec2 =
                 Protocol = "tcp",
                 CidrBlocks = inputList [ input "0.0.0.0/0" ])
 
-        SecurityGroupRule("mastodon-ecs-outbound-all-tcp-ip4-security-group-rule", securityGroupRuleArgs)
+        SecurityGroupRule(prefixMastodonResource"ecs-outbound-all-tcp-ip4-security-group-rule", securityGroupRuleArgs)
 
     let loadBalancerSecurityGroupIp4HttpTrafficInboundRule =
         let securityGroupRuleArgs =
@@ -121,7 +122,7 @@ module Ec2 =
                 Protocol = "tcp",
                 CidrBlocks = inputList [ input "0.0.0.0/0"] )
 
-        SecurityGroupRule("mastodon-loadbalancer-inbound-http-security-group-rule", securityGroupRuleArgs)
+        SecurityGroupRule(prefixMastodonResource "loadbalancer-inbound-http-security-group-rule", securityGroupRuleArgs)
 
     let loadBalancerSecurityGroupIp4HttpsTrafficInboundRule =
         let securityGroupRuleArgs =
@@ -133,7 +134,7 @@ module Ec2 =
                 Protocol = "tcp",
                 CidrBlocks = inputList [ input "0.0.0.0/0"] )
 
-        SecurityGroupRule("mastodon-loadbalancer-inbound-https-security-group-rule", securityGroupRuleArgs)
+        SecurityGroupRule(prefixMastodonResource "loadbalancer-inbound-https-security-group-rule", securityGroupRuleArgs)
     
     let loadBalancerSecurityGroupIp4AllTcpOutboundRule = 
         let securityGroupRuleArgs =
@@ -145,7 +146,7 @@ module Ec2 =
                 Protocol = "tcp",
                 CidrBlocks = inputList [ input "0.0.0.0/0" ])
 
-        SecurityGroupRule("mastodon-loadbalancer-outbound-all-tcp-ip4-security-group-rule", securityGroupRuleArgs)
+        SecurityGroupRule(prefixMastodonResource "loadbalancer-outbound-all-tcp-ip4-security-group-rule", securityGroupRuleArgs)
 
 
 //[ ("rdsSecurityGroup", rdsSecurityGroup.Id :> obj)

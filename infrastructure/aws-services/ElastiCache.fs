@@ -5,6 +5,7 @@ module ElastiCache =
     open Pulumi.FSharp
     open Pulumi.Aws.ElastiCache
     open MastodonAwsServices.Ec2
+    open MastodonAwsServices.Config.Values
 
     let createElastiCacheCluster () =
 
@@ -19,6 +20,6 @@ module ElastiCache =
             SecurityGroupIds = inputList [ io elasticacheSecurityGroup.Id ]
         )
 
-        let cluster = Cluster("mastodon-elasticache-cluster", clusterArgs)
+        let cluster = Cluster(prefixMastodonResource "elasticache-cluster", clusterArgs)
 
         [ ("elastiCacheClusterName", cluster.Id :> obj)]

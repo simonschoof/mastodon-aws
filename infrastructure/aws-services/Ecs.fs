@@ -6,6 +6,7 @@ module Ecs =
     open Pulumi.Awsx
     open Pulumi.Aws.Iam
     open MastodonAwsServices.Ec2
+    open MastodonAwsServices.Config.Values
  
     
     // TODO: Provide all ENV variables for each mastodon deployable as parameter store values and secrets
@@ -23,7 +24,7 @@ ECS Cluster
 --------------------
 *)         
         let cluster =
-            Pulumi.Aws.Ecs.Cluster("mastodon-ecs-cluster")
+            Pulumi.Aws.Ecs.Cluster(prefixMastodonResource "ecs-cluster")
 
         (*
 --------------------
@@ -79,7 +80,7 @@ Application Load Balancer
             Lb.ApplicationLoadBalancerArgs(Listeners = listenerList, SecurityGroups = inputList [io loadBalancerSecurityGroup.Id])
 
         let loadBalancer =
-            Lb.ApplicationLoadBalancer("mastodon-load-balancer", applicationLoadBalancerArgs)
+            Lb.ApplicationLoadBalancer(prefixMastodonResource "load-balancer", applicationLoadBalancerArgs)
 
         (*
 --------------------
@@ -126,7 +127,7 @@ Container Task Definitions
         //     )
         // )
 
-        // let webTargetGroup = Pulumi.Aws.LB.TargetGroup("mastodon-web-tg", webTargetGroupArgs)
+        // let webTargetGroup = Pulumi.Aws.LB.TargetGroup(prefixMastodonResource "web-tg", webTargetGroupArgs)
 
         // let webContainerportMappingArgs = Ecs.Inputs.TaskDefinitionPortMappingArgs(
         //     ContainerPort = 3000,
@@ -206,12 +207,12 @@ Fargate Service
 
 
         let taskPolicy =
-            Policy("taskPolicy", PolicyArgs(PolicyDocument = policiy))
+            Policy(prefixMastodonResource "task-policy", PolicyArgs(PolicyDocument = policiy))
 
 
         let taskRole =
             Role(
-                "taskRole",
+                prefixMastodonResource "task-role",
                 RoleArgs(AssumeRolePolicy = assumeRolePolicy, ManagedPolicyArns = inputList [ io taskPolicy.Arn ])
             )
 
@@ -242,7 +243,7 @@ Fargate Service
             )
 
         let service =
-            Ecs.FargateService("testservice", serviceArgs)
+            Ecs.FargateService(prefixMastodonResource "fargate-service", serviceArgs)
 
         [ ("ecsCluster", cluster.Id :> obj) ]
 //   ("alb", loadBalancer.Urn :> obj)

@@ -8,6 +8,7 @@ module Rds =
     open Pulumi.FSharp
     open MastodonAwsServices
     open MastodonAwsServices.Ec2
+    open MastodonAwsServices.Config.Values
 
     let createRdsCluster () =
 
@@ -18,7 +19,7 @@ module Rds =
 
             let clusterArgs =
                 ClusterArgs(
-                    ClusterIdentifier = "mastodon-rds-cluster",
+                    ClusterIdentifier = prefixMastodonResource "rds-cluster-identifier",
                     Engine = "aurora-postgresql",
                     EngineMode = "provisioned",
                     EngineVersion = "14.5",
@@ -33,7 +34,7 @@ module Rds =
                     VpcSecurityGroupIds = inputList [ io rdsSecurityGroup.Id ]
                 )
 
-            Cluster("mastodon-rds-cluster", clusterArgs)
+            Cluster(prefixMastodonResource "rds-cluster", clusterArgs)
 
         let clusterInstanceArgs =
             ClusterInstanceArgs(
@@ -44,7 +45,7 @@ module Rds =
             )
 
         let clusterInstance =
-            ClusterInstance("mastodon-rds-cluster-instance", clusterInstanceArgs)
+            ClusterInstance(prefixMastodonResource "rds-cluster-instance", clusterInstanceArgs)
 
         [ ("rdsClusterName", cluster.Id :> obj)
           ("rdsClusterInstanceName", clusterInstance.Id :> obj) ]

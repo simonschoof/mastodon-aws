@@ -11,6 +11,7 @@ module S3AndCloudFront =
     open Pulumi.Aws.Iam.Inputs
     open Pulumi.Aws.S3
     open Pulumi.FSharp
+    open MastodonAwsServices.Config.Values
 
     let createBucketAndDistribution () = // Create an AWS resource (S3 Bucket)
         (*
@@ -19,7 +20,7 @@ S3
 -----------------------
 *)
         let bucket =
-            let bucketName = "mastodon-s3-storage"
+            let bucketName = prefixMastodonResource "s3-storage"
 
             let bucketArgs = BucketArgs(Acl = "private")
 
@@ -35,7 +36,7 @@ S3
                     RestrictPublicBuckets = true
                 )
 
-            BucketPublicAccessBlock("mastodon-s3-storage-public-access-block", bucketPublicAccessBlockArgs)
+            BucketPublicAccessBlock(prefixMastodonResource "s3-storage-public-access-block", bucketPublicAccessBlockArgs)
         
         (*
 -----------------------
@@ -82,13 +83,13 @@ S3 access for Mastodon
 
             let policyArgs = PolicyArgs(PolicyDocument = io (policyDocument.Apply(fun (pd) -> pd.Json)))
 
-            let policy = Policy("mastodon-s3-access-policiy", policyArgs)
+            let policy = Policy(prefixMastodonResource "s3-access-policiy", policyArgs)
 
-            let  group = Group("mastodon-s3-access-group")
+            let group = Group(prefixMastodonResource "s3-access-group")
 
             let policyAttachmentArgs = PolicyAttachmentArgs(Groups = group.Name, PolicyArn = policy.Arn)
 
-            PolicyAttachment("mastodon-access-group-policiy-attachment", policyAttachmentArgs)
+            PolicyAttachment(prefixMastodonResource "access-group-policiy-attachment", policyAttachmentArgs)
 
         (*
 -----------------------
@@ -131,7 +132,7 @@ Cloudfront as S3 alias
             let bucketPolicyArgs =
                 BucketPolicyArgs(Bucket = bucket.Id, Policy = io (policyDocument.Apply(fun (pd) -> pd.Json)))
 
-            BucketPolicy("mastodon-image-bucket-policy", bucketPolicyArgs)
+            BucketPolicy(prefixMastodonResource "image-bucket-policy", bucketPolicyArgs)
 
         let certInvokeOptions =
             let invokeOptions = InvokeOptions()
@@ -206,7 +207,7 @@ Cloudfront as S3 alias
                     Restrictions = restrictionArgs
                 )
 
-            Distribution("mastodon-media-distribution", cloudFrontDistributionArgs)
+            Distribution(prefixMastodonResource "media-distribution", cloudFrontDistributionArgs)
 
         // Export the name of the bucket
         [ ("bucketName", bucket.Id :> obj) ]

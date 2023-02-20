@@ -50,11 +50,13 @@ module Values =
     open Secrets
     open Params
     open Pulumi
+    open Pulumi.Awsx.Ecs.Inputs
     
     let awsConfig = Config("aws");
     
     // Pulumi
-    let resourcePrefix = "mastodon"
+    let mastodonResourcePrefix = "mastodon-"
+    let prefixMastodonResource resourceNameToPrefix= mastodonResourcePrefix + resourceNameToPrefix  
 
     // RDS
     let rdsDbMasterPassword= getSecret"mastodon/rds/db-master-password"
@@ -83,7 +85,7 @@ module Values =
     // let dbPass = getSecret "mastodon/postgres/db-pass"
     
     // Mastodon redis
-    //let redisHost = getParameter "mastodon/redis/redis-host"
+    // let redisHost = getParameter "mastodon/redis/redis-host"
 
     // Mastodon email
     // let stmpServer = getParameter "mastodon/mail/smtp-server"
@@ -113,5 +115,48 @@ module Values =
 
     // Mastodon other
     let skipPostDeploymentMigrations = true
+
+    // let mastodonContainerEnvVariables  =[
+    //     TaskDefinitionKeyValuePairArgs(Name = "LOCAL_DOMAIN", Value = localDomain);
+    //     TaskDefinitionKeyValuePairArgs(Name = "SINGLE_USER_MODE", Value = singleUserMode);
+    //     TaskDefinitionKeyValuePairArgs(Name = "DEFAULT_LOCALE", Value = defaultLocale);
+    //     TaskDefinitionKeyValuePairArgs(Name = "SECRET_KEY_BASE", Value = secretKeyBase);
+    //     TaskDefinitionKeyValuePairArgs(Name = "OTP_SECRET", Value = otpSecret);
+    //     TaskDefinitionKeyValuePairArgs(Name = "VAPID_PRIVATE_KEY", Value = vapIdPrivateKey);
+    //     TaskDefinitionKeyValuePairArgs(Name = "VAPID_PUBLIC_KEY", Value = vapIdPublicKey);
+    //     TaskDefinitionKeyValuePairArgs(Name = "RAILS_ENV", Value = railsEnv);
+    //     TaskDefinitionKeyValuePairArgs(Name = "RAILS_SERVE_STATIC_FILES", Value = railsServeStaticFiles);
+    //     TaskDefinitionKeyValuePairArgs(Name = "RAILS_LOG_LEVEL", Value = railsLogLevel);
+    //     TaskDefinitionKeyValuePairArgs(Name = "NODE_ENV", Value = nodeEnv);
+    //     TaskDefinitionKeyValuePairArgs(Name = "DB_HOST", Value = dbHost);
+    //     TaskDefinitionKeyValuePairArgs(Name = "DB_USER", Value = dbUser);
+    //     TaskDefinitionKeyValuePairArgs(Name = "DB_NAME", Value = dbName);
+    //     TaskDefinitionKeyValuePairArgs(Name = "DB_PASS", Value = dbPass);
+    //     TaskDefinitionKeyValuePairArgs(Name = "REDIS_HOST", Value = redisHost);
+    //     TaskDefinitionKeyValuePairArgs(Name = "SMTP_SERVER", Value = stmpServer);
+    //     TaskDefinitionKeyValuePairArgs(Name = "SMTP_PORT", Value = smtpPort);
+    //     TaskDefinitionKeyValuePairArgs(Name = "SMTP_LOGIN", Value = smtpLogin);
+    //     TaskDefinitionKeyValuePairArgs(Name = "SMTP_PASSWORD", Value = smtpPassword);
+    //     TaskDefinitionKeyValuePairArgs(Name = "SMTP_FROM_ADDRESS", Value = smtpFromAddress);
+    //     TaskDefinitionKeyValuePairArgs(Name = "SMTP_DOMAIN", Value = smtpDomain);
+    //     TaskDefinitionKeyValuePairArgs(Name = "SMTP_DELIVERY_METHOD", Value = "");
+    //     TaskDefinitionKeyValuePairArgs(Name = "SMTP_AUTH_METHOD", Value = "");
+    //     TaskDefinitionKeyValuePairArgs(Name = "SMTP_CA_FILE", Value = "");
+    //     TaskDefinitionKeyValuePairArgs(Name = "SMTP_OPENSSL_VERIFY_MODE", Value = "");
+    //     TaskDefinitionKeyValuePairArgs(Name = "SMTP_ENABLE_STARTTLS_AUTO", Value = "");
+    //     TaskDefinitionKeyValuePairArgs(Name = "SMTP_ENABLE_STARTTLS", Value = "");
+    //     TaskDefinitionKeyValuePairArgs(Name = "SMTP_TLS", Value = "");
+    //     TaskDefinitionKeyValuePairArgs(Name = "SMTP_SSL", Value = "");
+    //     TaskDefinitionKeyValuePairArgs(Name = "CDN_HOST", Value = "");
+    //     TaskDefinitionKeyValuePairArgs(Name = "S3_ALIAS_HOST", Value = s3AliasHost);
+    //     TaskDefinitionKeyValuePairArgs(Name = "S3_ENABLED", Value = s3Enabled);
+    //     TaskDefinitionKeyValuePairArgs(Name = "S3_BUCKET", Value = s3Bucket); // use from bucket directly
+    //     TaskDefinitionKeyValuePairArgs(Name = "AWS_ACCESS_KEY_ID", Value = awsAccessKeyId);
+    //     TaskDefinitionKeyValuePairArgs(Name = "AWS_SECRET_ACCESS_KEY", Value = awsSecretAccessKey);
+    //     TaskDefinitionKeyValuePairArgs(Name = "S3_REGION", Value = s3Region);
+    //     TaskDefinitionKeyValuePairArgs(Name = "S3_PROTOCOL", Value = s3Protocol);
+    //     TaskDefinitionKeyValuePairArgs(Name = "S3_HOSTNAME", Value = s3Hostname); // use from bucket directly
+    //     TaskDefinitionKeyValuePairArgs(Name = "SKIP_POST_DEPLOYMENT_MIGRATIONS", Value = skipPostDeploymentMigrations)
+    // ]
 
     
