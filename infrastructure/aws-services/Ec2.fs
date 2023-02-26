@@ -86,19 +86,31 @@ module Ec2 =
                 Protocol = "tcp",
                 SourceSecurityGroupId = loadBalancerSecurityGroup.Id)
 
-        SecurityGroupRule(prefixMastodonResource "ecs-inbound-all-ip4-security-group-rule", securityGroupRuleArgs)
+        SecurityGroupRule(prefixMastodonResource "ecs-inbound-http-ip4-security-group-rule", securityGroupRuleArgs)
 
-    let ecsSecurityGroupIp4HttpsTrafficInboundRule =
+    let ecsSecurityGroupIp4MastodonWebTrafficInboundRule =
         let securityGroupRuleArgs =
             SecurityGroupRuleArgs(
                 SecurityGroupId = ecsSecurityGroup.Id,
                 Type = "ingress",
-                FromPort = 443,
-                ToPort = 443,
+                FromPort = 3000,
+                ToPort = 3000,
                 Protocol = "tcp",
                 SourceSecurityGroupId = loadBalancerSecurityGroup.Id)
 
-        SecurityGroupRule(prefixMastodonResource "ecs-inbound-https-ip4-security-group-rule", securityGroupRuleArgs)
+        SecurityGroupRule(prefixMastodonResource "ecs-inbound-mastodon-web-ip4-security-group-rule", securityGroupRuleArgs)
+
+    let ecsSecurityGroupIp4MastodonStreamingTrafficInboundRule =
+        let securityGroupRuleArgs =
+            SecurityGroupRuleArgs(
+                SecurityGroupId = ecsSecurityGroup.Id,
+                Type = "ingress",
+                FromPort = 4000,
+                ToPort = 4000,
+                Protocol = "tcp",
+                SourceSecurityGroupId = loadBalancerSecurityGroup.Id)
+
+        SecurityGroupRule(prefixMastodonResource "ecs-inbound-mastodon-streaming-ip4-security-group-rule", securityGroupRuleArgs)
 
     let ecsSecurityGroupIp4AllTcpOutboundRule = 
         let securityGroupRuleArgs =
