@@ -144,7 +144,7 @@ Cloudfront as S3 alias
 
             let getCertificateInvokeArgs =
                 GetCertificateInvokeArgs(
-                    Domain = "mastodonmedia.simonschoof.com",
+                    Domain = s3AliasHost,
                     MostRecent = true,
                     Types = inputList [ input "AMAZON_ISSUED" ]
                 )
