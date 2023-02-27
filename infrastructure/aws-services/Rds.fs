@@ -47,5 +47,4 @@ module Rds =
         let clusterInstance =
             ClusterInstance(prefixMastodonResource "rds-cluster-instance", clusterInstanceArgs)
 
-        [ ("rdsClusterName", cluster.Id :> obj)
-          ("rdsClusterInstanceName", clusterInstance.Id :> obj) ]
+        ()

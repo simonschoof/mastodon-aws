@@ -210,5 +210,4 @@ Cloudfront as S3 alias
 
             Distribution(prefixMastodonResource "media-distribution", cloudFrontDistributionArgs)
 
-        // Export the name of the bucket
-        [ ("bucketName", bucket.Id :> obj) ]
+        ()

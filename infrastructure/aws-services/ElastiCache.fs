@@ -22,4 +22,4 @@ module ElastiCache =
 
         let cluster = Cluster(prefixMastodonResource "elasticache-cluster", clusterArgs)
 
-        [ ("elastiCacheClusterName", cluster.Id :> obj)]
+        ()

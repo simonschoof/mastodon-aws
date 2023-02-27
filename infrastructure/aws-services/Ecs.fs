@@ -331,11 +331,4 @@ Fargate Service
         let service =
             Ecs.FargateService(prefixMastodonResource "fargate-service", serviceArgs)
 
-        [ ("ecsCluster", cluster.Id :> obj) ]
-//   ("alb", loadBalancer.Urn :> obj)
-//   ("lbUrl",  "":> obj) ]
-
-// return new Dictionary<string, object?>
-// {
-//     ["url"] = lb.LoadBalancer.Apply(loadBalancer => loadBalancer.DnsName),
-// };
+        ()

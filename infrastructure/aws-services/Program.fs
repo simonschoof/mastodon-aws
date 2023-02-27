@@ -8,13 +8,12 @@ open Pulumi.FSharp
 
 let infra () =
 
-  let outputs = 
-    createBucketAndDistribution() 
-    @ createRdsCluster()
-    @ createElastiCacheCluster()
-    @ createEcs()
+  createBucketAndDistribution() 
+  createRdsCluster()
+  createElastiCacheCluster()
+  createEcs()
   
-  dict outputs
+  dict []
 
 [<EntryPoint>]
 let main _ =
