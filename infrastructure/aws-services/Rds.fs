@@ -26,10 +26,10 @@ module Rds =
                     DatabaseName = "mastodon",
                     MasterUsername = "postgres",
                     MasterPassword = io (Output.CreateSecret rdsDbMasterPassword),
-                    SkipFinalSnapshot = true,
-                    //FinalSnapshotIdentifier = "mastodon-rds-final-snapshot",
+                    SkipFinalSnapshot = false,
+                    FinalSnapshotIdentifier = "mastodon-rds-final-snapshot",
                     ApplyImmediately = true,
-                    DeletionProtection = false,
+                    DeletionProtection = true,
                     Serverlessv2ScalingConfiguration = clusterServerlessv2ScalingConfigurationArgs,
                     VpcSecurityGroupIds = inputList [ io rdsSecurityGroup.Id ]
                 )
