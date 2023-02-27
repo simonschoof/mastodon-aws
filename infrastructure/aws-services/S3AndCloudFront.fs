@@ -5,6 +5,7 @@ module S3AndCloudFront =
 
     open Pulumi
     open Pulumi.Aws
+    open Pulumi.Aws.Acm
     open Pulumi.Aws.CloudFront
     open Pulumi.Aws.CloudFront.Inputs
     open Pulumi.Aws.Iam
@@ -134,20 +135,20 @@ Cloudfront as S3 alias
 
             BucketPolicy(prefixMastodonResource "image-bucket-policy", bucketPolicyArgs)
 
-        let certInvokeOptions =
-            let invokeOptions = InvokeOptions()
-            invokeOptions.Provider <- Provider("useast1", ProviderArgs(Region = "us-east-1"))
-            invokeOptions
-
-        let getCertificateInvokeArgs =
-            Pulumi.Aws.Acm.GetCertificateInvokeArgs(
-                Domain = "mastodonmedia.simonschoof.com",
-                MostRecent = true,
-                Types = inputList [ input "AMAZON_ISSUED" ]
-            )
-
         let cert =
-            Pulumi.Aws.Acm.GetCertificate.Invoke(getCertificateInvokeArgs, certInvokeOptions)
+            
+            let certInvokeOptions =
+                let invokeOptions = InvokeOptions()
+                invokeOptions.Provider <- Provider("useast1", ProviderArgs(Region = "us-east-1"))
+                invokeOptions
+
+            let getCertificateInvokeArgs =
+                GetCertificateInvokeArgs(
+                    Domain = "mastodonmedia.simonschoof.com",
+                    MostRecent = true,
+                    Types = inputList [ input "AMAZON_ISSUED" ]
+                )
+            GetCertificate.Invoke(getCertificateInvokeArgs, certInvokeOptions)
         
         let cloudFrontDistribution = 
             let s3OriginConfigArgs = DistributionOriginS3OriginConfigArgs(OriginAccessIdentity = originAccessIdentity.CloudfrontAccessIdentityPath)
@@ -198,7 +199,7 @@ Cloudfront as S3 alias
                 DistributionArgs(
                     Origins = originArgs,
                     Enabled = true,
-                    Aliases = inputList [input "mastodonmedia.simonschoof.com"],
+                    Aliases = inputList [input s3AliasHost],
                     Comment = "Distribution as S3 alias for Mastodon content delivery",
                     DefaultRootObject = "index.html",
                     PriceClass = "PriceClass_100",
