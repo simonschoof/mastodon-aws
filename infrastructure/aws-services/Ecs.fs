@@ -4,101 +4,104 @@ module Ecs =
 
     open Pulumi
     open Pulumi.FSharp
-    open Pulumi.Awsx
+    open Pulumi.Aws.Acm
+    open Pulumi.Aws.Ecs
+    open Pulumi.Aws.Ecs.Inputs
     open Pulumi.Aws.Iam
+    open Pulumi.Aws.LB
+    open Pulumi.Aws.LB.Inputs
     open MastodonAwsServices.Ec2
     open MastodonAwsServices.Config.Values
 
     let createEcs () =
 
         (*
---------------------
+----------------------------------------
 ECS Cluster
---------------------
+----------------------------------------
 *)
         let cluster =
-            Pulumi.Aws.Ecs.Cluster(prefixMastodonResource "ecs-cluster")
+            Cluster(prefixMastodonResource "ecs-cluster")
 
         (*
---------------------
+----------------------------------------
 Certificate
---------------------
+----------------------------------------
 *)
-        // TODO: Find a way to get the certificate from the ACM without setting the domain name
-        let getCertificateInvokeArgs =
-            Pulumi.Aws.Acm.GetCertificateInvokeArgs(
-                Domain = "social.simonschoof.com",
-                MostRecent = true,
-                Types = inputList [ input "AMAZON_ISSUED" ]
-            )
-
         let cert =
-            Pulumi.Aws.Acm.GetCertificate.Invoke(getCertificateInvokeArgs)
+            let getCertificateInvokeArgs =
+                GetCertificateInvokeArgs(
+                    Domain = localDomain,
+                    MostRecent = true,
+                    Types = inputList [ input "AMAZON_ISSUED" ]
+            )
+            GetCertificate.Invoke(getCertificateInvokeArgs)
 
         (*
---------------------
-Application Load Balancer
---------------------
+----------------------------------------
+Application Load Balancer, Target Groups
+and Listener and Listene rules
+----------------------------------------
 *)
-        let loadBalancerArgs = Pulumi.Aws.LB.LoadBalancerArgs(
+        let loadBalancerArgs = LoadBalancerArgs(
             IpAddressType = "ipv4",
             LoadBalancerType = "application",
             SecurityGroups = inputList [ io loadBalancerSecurityGroup.Id],
             Subnets = inputList (defaultSubnetIds |> List.map io)
         )
 
-        let loadBalancer = Pulumi.Aws.LB.LoadBalancer(prefixMastodonResource "load-balancer", loadBalancerArgs)
+        let loadBalancer = LoadBalancer(prefixMastodonResource "load-balancer", loadBalancerArgs)
 
         let webTargetGroupArgs =
-            Pulumi.Aws.LB.TargetGroupArgs(
+            TargetGroupArgs(
                 TargetType = "ip",
                 Port = 3000,
                 Protocol = "HTTP",
                 VpcId = defaultVpc.Id,
-                HealthCheck = Pulumi.Aws.LB.Inputs.TargetGroupHealthCheckArgs(Interval = 30, Path = "/health")
+                HealthCheck = TargetGroupHealthCheckArgs(Interval = 30, Path = "/health")
                 )
 
-        let webTargetGroup = Pulumi.Aws.LB.TargetGroup(prefixMastodonResource "web-tg", webTargetGroupArgs)
+        let webTargetGroup = TargetGroup(prefixMastodonResource "web-tg", webTargetGroupArgs)
 
         let streamingTargetGroupArgs =
-            Pulumi.Aws.LB.TargetGroupArgs(
+            TargetGroupArgs(
                 TargetType = "ip",
                 Port = 4000,
                 Protocol = "HTTP",
                 VpcId = defaultVpc.Id,
-                HealthCheck = Pulumi.Aws.LB.Inputs.TargetGroupHealthCheckArgs(Interval = 30, Path = "/api/v1/streaming/health")
+                HealthCheck = TargetGroupHealthCheckArgs(Interval = 30, Path = "/api/v1/streaming/health")
             )
         
-        let streamingTargetGroup = Pulumi.Aws.LB.TargetGroup(prefixMastodonResource "streaming-tg", streamingTargetGroupArgs)
+        let streamingTargetGroup = TargetGroup(prefixMastodonResource "streaming-tg", streamingTargetGroupArgs)
 
         let httpDefaultAction =
-            Pulumi.Aws.LB.Inputs.ListenerDefaultActionArgs(
+            ListenerDefaultActionArgs(
                 Type = "redirect",
                 Redirect =
-                    Pulumi.Aws.LB.Inputs.ListenerDefaultActionRedirectArgs(
+                    ListenerDefaultActionRedirectArgs(
                         Port = "443",
                         Protocol = "HTTPS",
                         StatusCode = "HTTP_301"
                     )
             )
         
-        let httpListenerArgs = Pulumi.Aws.LB.ListenerArgs(
+        let httpListenerArgs = ListenerArgs(
                 LoadBalancerArn = loadBalancer.Arn,
                 Port = 80, 
                 Protocol = "HTTP",
                 DefaultActions = inputList [ input httpDefaultAction ]
             )
         
-        let httpListener = Pulumi.Aws.LB.Listener(prefixMastodonResource "http-listener", httpListenerArgs)
+        Listener(prefixMastodonResource "http-listener", httpListenerArgs) |> ignore
 
         let httpsDefaultAction =
-            Pulumi.Aws.LB.Inputs.ListenerDefaultActionArgs(
+            ListenerDefaultActionArgs(
                 Type = "forward",                
                 TargetGroupArn = webTargetGroup.Arn
             )
 
         let httpsListenerArgs = 
-            Pulumi.Aws.LB.ListenerArgs(
+            ListenerArgs(
                 LoadBalancerArn = loadBalancer.Arn,
                 Port = 443,
                 Protocol = "HTTPS",
@@ -107,36 +110,37 @@ Application Load Balancer
                 DefaultActions =  inputList [ input httpsDefaultAction ]
             )
         
-        let httpsListener = Pulumi.Aws.LB.Listener(prefixMastodonResource "https-listener", httpsListenerArgs)
+        let httpsListener = Listener(prefixMastodonResource "https-listener", httpsListenerArgs)
 
-        let listRuleConditionPathPatternArgs = Pulumi.Aws.LB.Inputs.ListenerRuleConditionPathPatternArgs(
+        let listRuleConditionPathPatternArgs = ListenerRuleConditionPathPatternArgs(
             Values = inputList  [ input "/api/v1/streaming"]
         )
 
-        let listenerRuleConditionArgs = Pulumi.Aws.LB.Inputs.ListenerRuleConditionArgs(
+        let listenerRuleConditionArgs = ListenerRuleConditionArgs(
             PathPattern = listRuleConditionPathPatternArgs
         )
 
-        let listenerRuleActionArgs = Pulumi.Aws.LB.Inputs.ListenerRuleActionArgs(
+        let listenerRuleActionArgs = ListenerRuleActionArgs(
             Type = "forward",
             TargetGroupArn = streamingTargetGroup.Arn
         )
-        let listenerRuleArgs = Pulumi.Aws.LB.ListenerRuleArgs(
+
+        let listenerRuleArgs = ListenerRuleArgs(
             ListenerArn = httpsListener.Arn,
             Priority = 1,
             Conditions = inputList [input listenerRuleConditionArgs ],
             Actions = inputList [input listenerRuleActionArgs]
         )
 
-        let listenerRule = Pulumi.Aws.LB.ListenerRule(prefixMastodonResource "streaming-api-path-rule",listenerRuleArgs)
+        ListenerRule(prefixMastodonResource "streaming-api-path-rule",listenerRuleArgs) |> ignore
 
         (*
---------------------
+----------------------------------------
 Container Task Definitions
---------------------
+----------------------------------------
 *)
         let containerDefinitionsList =
-            System.Collections.Generic.Dictionary<string, Ecs.Inputs.TaskDefinitionContainerDefinitionArgs>()
+            System.Collections.Generic.Dictionary<string, Awsx.Ecs.Inputs.TaskDefinitionContainerDefinitionArgs>()
 
         // let taskDefinitionPortMappingArgs =
         //     Ecs.Inputs.TaskDefinitionPortMappingArgs(TargetGroup = loadBalancer.DefaultTargetGroup)
@@ -167,10 +171,10 @@ Container Task Definitions
 
 
         let webContainerportMappingArgs =
-            Ecs.Inputs.TaskDefinitionPortMappingArgs(ContainerPort = 3000, TargetGroup = webTargetGroup)
+            Awsx.Ecs.Inputs.TaskDefinitionPortMappingArgs(ContainerPort = 3000, TargetGroup = webTargetGroup)
 
         let webContainer =
-            Ecs.Inputs.TaskDefinitionContainerDefinitionArgs(
+            Awsx.Ecs.Inputs.TaskDefinitionContainerDefinitionArgs(
                 Image = "tootsuite/mastodon:v4.1.0",
                 Command =
                     inputList [ input "bash"
@@ -191,9 +195,9 @@ Container Task Definitions
 
 
         let streamingContainerportMappingArgs =
-            Ecs.Inputs.TaskDefinitionPortMappingArgs(ContainerPort = 4000, TargetGroup = streamingTargetGroup)
+            Awsx.Ecs.Inputs.TaskDefinitionPortMappingArgs(ContainerPort = 4000, TargetGroup = streamingTargetGroup)
 
-        let streamingContainer = Ecs.Inputs.TaskDefinitionContainerDefinitionArgs(
+        let streamingContainer = Awsx.Ecs.Inputs.TaskDefinitionContainerDefinitionArgs(
             Image = "tootsuite/mastodon:v4.1.0",
             Command =
                 inputList [ input "bash"
@@ -208,7 +212,7 @@ Container Task Definitions
 
         containerDefinitionsList.Add(prefixMastodonResource "streaming",streamingContainer)
 
-        let sidekiqContainer = Ecs.Inputs.TaskDefinitionContainerDefinitionArgs(
+        let sidekiqContainer = Awsx.Ecs.Inputs.TaskDefinitionContainerDefinitionArgs(
             Image = "tootsuite/mastodon:v4.1.0",
             Command =
                 inputList [ input "bash"
@@ -223,9 +227,9 @@ Container Task Definitions
         containerDefinitionsList.Add(prefixMastodonResource "sidekiq",sidekiqContainer)
 
         (*
---------------------
+----------------------------------------
 Fargate Service
---------------------
+----------------------------------------
 *)
 
         let assumeRolePolicy =
@@ -271,24 +275,24 @@ Fargate Service
             )
 
         let defaultTaskRoleWithPolicy =
-            Awsx.Inputs.DefaultRoleWithPolicyArgs(RoleArn = taskRole.Arn)
+            Awsx.Awsx.Inputs.DefaultRoleWithPolicyArgs(RoleArn = taskRole.Arn)
 
 
         let fargateServiceTaskDefinitionArgs =
-            Ecs.Inputs.FargateServiceTaskDefinitionArgs(
+            Awsx.Ecs.Inputs.FargateServiceTaskDefinitionArgs(
                 Containers = containerDefinitionsList,
                 TaskRole = defaultTaskRoleWithPolicy
             )
 
         let networkConfiguration =
-            Pulumi.Aws.Ecs.Inputs.ServiceNetworkConfigurationArgs(
+            ServiceNetworkConfigurationArgs(
                 AssignPublicIp = true,
                 Subnets = inputList (defaultSubnetIds |> List.map io),
                 SecurityGroups = inputList [ io ecsSecurityGroup.Id ]
             )
 
         let serviceArgs =
-            Ecs.FargateServiceArgs(
+            Awsx.Ecs.FargateServiceArgs(
                 Cluster = cluster.Arn,
                 DesiredCount = 1,
                 EnableExecuteCommand = true,
@@ -296,6 +300,6 @@ Fargate Service
                 NetworkConfiguration = networkConfiguration
             )
 
-        Ecs.FargateService(prefixMastodonResource "fargate-service", serviceArgs) |> ignore
+        Awsx.Ecs.FargateService(prefixMastodonResource "fargate-service", serviceArgs) |> ignore
 
         ()
