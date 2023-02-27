@@ -9,11 +9,6 @@ module Ecs =
     open MastodonAwsServices.Ec2
     open MastodonAwsServices.Config.Values
 
-    // TODO: Cleanup code and provide a debug flag which allows exec-command, starts a psql and mastodon web container. The web container is just running a bash.
-    // Switch on final snapshots and deletion protections
-    // TODO: Refine the outbound security group rules to only allow outbound connection to needed resources.
-    // TODO: Allow SSL connections to RDS, S3 and Redis only(https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/CHAP_Security.html#CHAP_Security.InboundPorts)
-
     let createEcs () =
 
         (*
@@ -54,9 +49,6 @@ Application Load Balancer
 
         let loadBalancer = Pulumi.Aws.LB.LoadBalancer(prefixMastodonResource "load-balancer", loadBalancerArgs)
 
-        // let listenerList =
-        //     System.Collections.Generic.List<Lb.Inputs.ListenerArgs>()
-
         let webTargetGroupArgs =
             Pulumi.Aws.LB.TargetGroupArgs(
                 TargetType = "ip",
@@ -89,9 +81,6 @@ Application Load Balancer
                         StatusCode = "HTTP_301"
                     )
             )
-
-        // let httpListenerArgs =
-        //     Lb.Inputs.ListenerArgs(Port = 80, Protocol = "HTTP", DefaultActions = inputList [ input defaultAction ])
         
         let httpListenerArgs = Pulumi.Aws.LB.ListenerArgs(
                 LoadBalancerArn = loadBalancer.Arn,
@@ -101,8 +90,6 @@ Application Load Balancer
             )
         
         let httpListener = Pulumi.Aws.LB.Listener(prefixMastodonResource "http-listener", httpListenerArgs)
-
-        // listenerList.Add(httpListenerArgs)
 
         let httpsDefaultAction =
             Pulumi.Aws.LB.Inputs.ListenerDefaultActionArgs(
@@ -130,17 +117,9 @@ Application Load Balancer
             PathPattern = listRuleConditionPathPatternArgs
         )
 
-        let listenerRuleActionForwardTargetGroupArgs = Pulumi.Aws.LB.Inputs.ListenerRuleActionForwardTargetGroupArgs(
-            Arn = streamingTargetGroup.Arn
-        )
-
-        let listenerRuleActionForwardArgs = Pulumi.Aws.LB.Inputs.ListenerRuleActionForwardArgs(
-            TargetGroups = inputList [input listenerRuleActionForwardTargetGroupArgs]
-        )
         let listenerRuleActionArgs = Pulumi.Aws.LB.Inputs.ListenerRuleActionArgs(
             Type = "forward",
             TargetGroupArn = streamingTargetGroup.Arn
-            //Forward = input listenerRuleActionForwardArgs
         )
         let listenerRuleArgs = Pulumi.Aws.LB.ListenerRuleArgs(
             ListenerArn = httpsListener.Arn,
@@ -150,17 +129,6 @@ Application Load Balancer
         )
 
         let listenerRule = Pulumi.Aws.LB.ListenerRule(prefixMastodonResource "streaming-api-path-rule",listenerRuleArgs)
-
-        // listenerList.Add(httpsListenerArgs)
-        
-        // let applicationLoadBalancerArgs =
-        //     Lb.ApplicationLoadBalancerArgs(
-        //         Listeners = listenerList,
-        //         SecurityGroups = inputList [ io loadBalancerSecurityGroup.Id ]
-        //     )
-
-        // let loadBalancer =
-        //     Lb.ApplicationLoadBalancer(prefixMastodonResource "load-balancer", applicationLoadBalancerArgs)
 
         (*
 --------------------
@@ -328,7 +296,6 @@ Fargate Service
                 NetworkConfiguration = networkConfiguration
             )
 
-        let service =
-            Ecs.FargateService(prefixMastodonResource "fargate-service", serviceArgs)
+        Ecs.FargateService(prefixMastodonResource "fargate-service", serviceArgs) |> ignore
 
         ()

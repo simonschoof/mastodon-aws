@@ -44,7 +44,7 @@ module Rds =
                 EngineVersion = cluster.EngineVersion
             )
 
-        let clusterInstance =
-            ClusterInstance(prefixMastodonResource "rds-cluster-instance", clusterInstanceArgs)
+        
+        ClusterInstance(prefixMastodonResource "rds-cluster-instance", clusterInstanceArgs) |> ignore
 
         ()

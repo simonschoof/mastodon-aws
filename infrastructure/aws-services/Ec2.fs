@@ -159,7 +159,3 @@ module Ec2 =
                 CidrBlocks = inputList [ input "0.0.0.0/0" ])
 
         SecurityGroupRule(prefixMastodonResource "loadbalancer-outbound-all-tcp-ip4-security-group-rule", securityGroupRuleArgs)
-
-
-//[ ("rdsSecurityGroup", rdsSecurityGroup.Id :> obj)
-//  ("ecsSecurityGroup", ecsSecurityGroup.Id :> obj) ]

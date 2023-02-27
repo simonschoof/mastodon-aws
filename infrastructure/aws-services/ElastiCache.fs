@@ -20,6 +20,6 @@ module ElastiCache =
             SecurityGroupIds = inputList [ io elasticacheSecurityGroup.Id ]
         )
 
-        let cluster = Cluster(prefixMastodonResource "elasticache-cluster", clusterArgs)
+        Cluster(prefixMastodonResource "elasticache-cluster", clusterArgs) |> ignore
 
         ()
