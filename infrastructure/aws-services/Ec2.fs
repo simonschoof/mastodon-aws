@@ -90,18 +90,6 @@ Inbound rules
             )
 
         SecurityGroupRule(prefixMastodonResource "elasticache-inbound-tcp-security-group-rule", securityGroupRuleArgs)
-    
-    let ecsSecurityGroupIp4HttpTrafficInboundRule =
-        let securityGroupRuleArgs =
-            SecurityGroupRuleArgs(
-                SecurityGroupId = ecsSecurityGroup.Id,
-                Type = "ingress",
-                FromPort = 80,
-                ToPort = 80,
-                Protocol = "tcp",
-                SourceSecurityGroupId = loadBalancerSecurityGroup.Id)
-
-        SecurityGroupRule(prefixMastodonResource "ecs-inbound-http-ip4-security-group-rule", securityGroupRuleArgs)
 
     let ecsSecurityGroupIp4MastodonWebTrafficInboundRule =
         let securityGroupRuleArgs =
