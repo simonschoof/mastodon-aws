@@ -7,6 +7,11 @@ module Ec2 =
     open Pulumi.FSharp
     open MastodonAwsServices.Config.Values
 
+        (*
+----------------------------------------
+Vpc and subnets
+----------------------------------------
+*) 
     let defaultVpc = DefaultVpc("default-vpc")
 
     let defaultSubnets =
@@ -25,6 +30,11 @@ module Ec2 =
           defaultSubnets.Apply(fun subnets -> subnets.Ids[1])
           defaultSubnets.Apply(fun subnets -> subnets.Ids[2]) ]
 
+        (*
+----------------------------------------
+Security groups
+----------------------------------------
+*) 
     let rdsSecurityGroup =
         let rdsSecurityGroupArgs =
             SecurityGroupArgs(Description = "Allow inbound traffic from ECS to RDS")
@@ -50,6 +60,11 @@ module Ec2 =
 
         SecurityGroup(prefixMastodonResource "loadbalancer-security-group", loadBalancerSecurityGroupArgs)
 
+        (*
+----------------------------------------
+Inbound rules
+----------------------------------------
+*) 
     let rdsSecurityGroupInboundRule =
         let securityGroupRuleArgs =
             SecurityGroupRuleArgs(
@@ -112,18 +127,6 @@ module Ec2 =
 
         SecurityGroupRule(prefixMastodonResource "ecs-inbound-mastodon-streaming-ip4-security-group-rule", securityGroupRuleArgs)
 
-    let ecsSecurityGroupIp4AllTcpOutboundRule = 
-        let securityGroupRuleArgs =
-            SecurityGroupRuleArgs(
-                SecurityGroupId = ecsSecurityGroup.Id,
-                Type = "egress",
-                FromPort = 0,
-                ToPort = 65535,
-                Protocol = "tcp",
-                CidrBlocks = inputList [ input "0.0.0.0/0" ])
-
-        SecurityGroupRule(prefixMastodonResource"ecs-outbound-all-tcp-ip4-security-group-rule", securityGroupRuleArgs)
-
     let loadBalancerSecurityGroupIp4HttpTrafficInboundRule =
         let securityGroupRuleArgs =
             SecurityGroupRuleArgs(
@@ -147,7 +150,12 @@ module Ec2 =
                 CidrBlocks = inputList [ input "0.0.0.0/0"] )
 
         SecurityGroupRule(prefixMastodonResource "loadbalancer-inbound-https-security-group-rule", securityGroupRuleArgs)
-    
+        
+        (*
+----------------------------------------
+Outbound rules
+----------------------------------------
+*)   
     let loadBalancerSecurityGroupIp4AllTcpOutboundRule = 
         let securityGroupRuleArgs =
             SecurityGroupRuleArgs(
@@ -159,3 +167,64 @@ module Ec2 =
                 CidrBlocks = inputList [ input "0.0.0.0/0" ])
 
         SecurityGroupRule(prefixMastodonResource "loadbalancer-outbound-all-tcp-ip4-security-group-rule", securityGroupRuleArgs)
+
+
+    let ecsSecurityGroupIp4RdsTcpOutboundRule = 
+        let securityGroupRuleArgs =
+            SecurityGroupRuleArgs(
+                SecurityGroupId = ecsSecurityGroup.Id,
+                Type = "egress",
+                FromPort = 5432,
+                ToPort = 5432,
+                Protocol = "tcp",
+                CidrBlocks = inputList [ input "0.0.0.0/0" ])
+
+        SecurityGroupRule(prefixMastodonResource"ecs-outbound-rds-tcp-ip4-security-group-rule", securityGroupRuleArgs)
+    
+    let ecsSecurityGroupIp4RedisTcpOutboundRule = 
+        let securityGroupRuleArgs =
+            SecurityGroupRuleArgs(
+                SecurityGroupId = ecsSecurityGroup.Id,
+                Type = "egress",
+                FromPort = 6379,
+                ToPort = 6379,
+                Protocol = "tcp",
+                CidrBlocks = inputList [ input "0.0.0.0/0" ])
+
+        SecurityGroupRule(prefixMastodonResource"ecs-outbound-redis-tcp-ip4-security-group-rule", securityGroupRuleArgs)
+    
+    let ecsSecurityGroupIp4SmtpTcpOutboundRule = 
+        let securityGroupRuleArgs =
+            SecurityGroupRuleArgs(
+                SecurityGroupId = ecsSecurityGroup.Id,
+                Type = "egress",
+                FromPort = int smtpPort,
+                ToPort = int smtpPort,
+                Protocol = "tcp",
+                CidrBlocks = inputList [ input "0.0.0.0/0" ])
+
+        SecurityGroupRule(prefixMastodonResource"ecs-outbound-smtp-tcp-ip4-security-group-rule", securityGroupRuleArgs)
+    
+    let ecsSecurityGroupIp4HttpTcpOutboundRule = 
+        let securityGroupRuleArgs =
+            SecurityGroupRuleArgs(
+                SecurityGroupId = ecsSecurityGroup.Id,
+                Type = "egress",
+                FromPort = 80,
+                ToPort = 80,
+                Protocol = "tcp",
+                CidrBlocks = inputList [ input "0.0.0.0/0" ])
+
+        SecurityGroupRule(prefixMastodonResource"ecs-outbound-http-tcp-ip4-security-group-rule", securityGroupRuleArgs)
+    
+    let ecsSecurityGroupIp4HttpsTcpOutboundRule = 
+        let securityGroupRuleArgs =
+            SecurityGroupRuleArgs(
+                SecurityGroupId = ecsSecurityGroup.Id,
+                Type = "egress",
+                FromPort = 443,
+                ToPort = 443,
+                Protocol = "tcp",
+                CidrBlocks = inputList [ input "0.0.0.0/0" ])
+
+        SecurityGroupRule(prefixMastodonResource"ecs-outbound-https-tcp-ip4-security-group-rule", securityGroupRuleArgs)
