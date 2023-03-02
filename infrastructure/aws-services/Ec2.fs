@@ -156,17 +156,29 @@ Inbound rules
 Outbound rules
 ----------------------------------------
 *)   
-    let loadBalancerSecurityGroupIp4AllTcpOutboundRule = 
+    let loadBalancerSecurityGroupIp4WebTcpOutboundRule = 
         let securityGroupRuleArgs =
             SecurityGroupRuleArgs(
                 SecurityGroupId = loadBalancerSecurityGroup.Id,
                 Type = "egress",
-                FromPort = 0,
-                ToPort = 65535,
+                FromPort = 3000,
+                ToPort = 3000,
                 Protocol = "tcp",
                 CidrBlocks = inputList [ input "0.0.0.0/0" ])
 
-        SecurityGroupRule(prefixMastodonResource "loadbalancer-outbound-all-tcp-ip4-security-group-rule", securityGroupRuleArgs)
+        SecurityGroupRule(prefixMastodonResource "loadbalancer-outbound-all-web-ip4-security-group-rule", securityGroupRuleArgs)
+    
+    let loadBalancerSecurityGroupIp4StreamingTcpOutboundRule = 
+        let securityGroupRuleArgs =
+            SecurityGroupRuleArgs(
+                SecurityGroupId = loadBalancerSecurityGroup.Id,
+                Type = "egress",
+                FromPort = 4000,
+                ToPort = 4000,
+                Protocol = "tcp",
+                CidrBlocks = inputList [ input "0.0.0.0/0" ])
+
+        SecurityGroupRule(prefixMastodonResource "loadbalancer-outbound-all-streaming-ip4-security-group-rule", securityGroupRuleArgs)
 
 
     let ecsSecurityGroupIp4RdsTcpOutboundRule = 
