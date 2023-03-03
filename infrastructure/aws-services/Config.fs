@@ -52,9 +52,14 @@ module Values =
     open Pulumi
     open Pulumi.Awsx.Ecs.Inputs
     open Pulumi.FSharp
-    
+
+    type RunMode =
+        | Production
+        | Maintenance
+        | Debug 
+
     let awsConfig = Config("aws");
-    
+    let runMode = Production
     // Pulumi
     let mastodonResourcePrefix = "mastodon-"
     let prefixMastodonResource resourceNameToPrefix= mastodonResourcePrefix + resourceNameToPrefix  

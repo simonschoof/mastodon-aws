@@ -142,48 +142,36 @@ Container Task Definitions
         let containerDefinitionsList =
             System.Collections.Generic.Dictionary<string, Awsx.Ecs.Inputs.TaskDefinitionContainerDefinitionArgs>()
 
-        // let taskDefinitionPortMappingArgs =
-        //     Ecs.Inputs.TaskDefinitionPortMappingArgs(TargetGroup = loadBalancer.DefaultTargetGroup)
+        let postgresContainer = 
+            match runMode with
+                | Maintenance | Debug -> 
+                    let taskDefinitionContainerDefinitionArgs =
+                        Awsx.Ecs.Inputs.TaskDefinitionContainerDefinitionArgs(
+                            Image = "postgres:latest",
+                                Command =
+                                    inputList [ input "bash"
+                                                input "-c"
+                                                input "while true; do sleep 3600; done" ],
+                                Essential = false
+                            )
 
-
-        // let nginxTaskDefinitionContainerDefinitionArgs =
-        //     Ecs.Inputs.TaskDefinitionContainerDefinitionArgs(
-        //         Image = "nginx:latest",
-        //         Cpu = 512,
-        //         Memory = 128,
-        //         Essential = true,
-        //         PortMappings = inputList [ input taskDefinitionPortMappingArgs ]
-        //     )
-
-        // containerDefinitionsList.Add("nginx", nginxTaskDefinitionContainerDefinitionArgs)
-
-        // let taskDefinitionContainerDefinitionArgs =
-        //     Ecs.Inputs.TaskDefinitionContainerDefinitionArgs(
-        //         Image = "postgres:latest",
-        //         Command =
-        //             inputList [ input "bash"
-        //                         input "-c"
-        //                         input "while true; do sleep 3600; done" ],
-        //         Essential = false
-        //     )
-
-        // containerDefinitionsList.Add("psql", taskDefinitionContainerDefinitionArgs)
+                    containerDefinitionsList.Add("psql", taskDefinitionContainerDefinitionArgs)
+                    ()
+                | Production -> ()
 
 
         let webContainerportMappingArgs =
             Awsx.Ecs.Inputs.TaskDefinitionPortMappingArgs(ContainerPort = 3000, TargetGroup = webTargetGroup)
 
+        let webContainerCommand = 
+            match runMode with
+            | Maintenance | Debug -> inputList [ input "bash"; input "-c"; input "while true; do sleep 3600; done" ]
+            | Production ->  inputList [ input "bash"; input "-c"; input "rm -f /mastodon/tmp/pids/server.pid; bundle exec rails s -p 3000" ]
+        
         let webContainer =
             Awsx.Ecs.Inputs.TaskDefinitionContainerDefinitionArgs(
                 Image = "tootsuite/mastodon:v4.1.0",
-                Command =
-                    inputList [ input "bash"
-                                input "-c"
-                                input "rm -f /mastodon/tmp/pids/server.pid; bundle exec rails s -p 3000" ],
-                // Command =
-                //     inputList [ input "bash"
-                //                 input "-c"
-                //                 input "while true; do sleep 3600; done" ],
+                Command = webContainerCommand,
                 Cpu = 512,
                 Memory = 512,
                 Essential = true,
@@ -279,10 +267,14 @@ Fargate Service
 
 
         let fargateServiceTaskDefinitionArgs =
-            Awsx.Ecs.Inputs.FargateServiceTaskDefinitionArgs(
-                Containers = containerDefinitionsList,
-                TaskRole = defaultTaskRoleWithPolicy
-            )
+            match runMode with 
+                | Maintenance | Debug -> Awsx.Ecs.Inputs.FargateServiceTaskDefinitionArgs(
+                    Containers = containerDefinitionsList,
+                    TaskRole = defaultTaskRoleWithPolicy
+                    )
+                | Production -> Awsx.Ecs.Inputs.FargateServiceTaskDefinitionArgs(
+                    Containers = containerDefinitionsList
+                    )
 
         let networkConfiguration =
             ServiceNetworkConfigurationArgs(
@@ -291,11 +283,16 @@ Fargate Service
                 SecurityGroups = inputList [ io ecsSecurityGroup.Id ]
             )
 
+        let enableExecutCommand = 
+            match runMode with
+                 | Maintenance | Debug -> true
+                 | Production -> false
+
         let serviceArgs =
             Awsx.Ecs.FargateServiceArgs(
                 Cluster = cluster.Arn,
                 DesiredCount = 1,
-                EnableExecuteCommand = true,
+                EnableExecuteCommand = enableExecutCommand,
                 TaskDefinitionArgs = fargateServiceTaskDefinitionArgs,
                 NetworkConfiguration = networkConfiguration
             )
