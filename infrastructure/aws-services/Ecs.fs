@@ -19,9 +19,13 @@ module Ecs =
 ----------------------------------------
 ECS Cluster
 ----------------------------------------
-*)
+*)  
+        let clusterArgs = ClusterArgs(
+            CapacityProviders = inputList [input "FARGATE_SPOT"]
+        )
+        
         let cluster =
-            Cluster(prefixMastodonResource "ecs-cluster")
+            Cluster(prefixMastodonResource "ecs-cluster", clusterArgs)
 
         (*
 ----------------------------------------
