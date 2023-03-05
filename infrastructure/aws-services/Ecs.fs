@@ -176,7 +176,7 @@ Container Task Definitions
             Awsx.Ecs.Inputs.TaskDefinitionContainerDefinitionArgs(
                 Image = "tootsuite/mastodon:v4.1.0",
                 Command = webContainerCommand,
-                Cpu = 512,
+                Cpu = 256,
                 Memory = 512,
                 Essential = true,
                 Environment = mastodonContainerEnvVariables,
@@ -195,8 +195,8 @@ Container Task Definitions
                 inputList [ input "bash"
                             input "-c"
                             input "node ./streaming" ],
-            Cpu = 512,
-            Memory = 512,
+            Cpu = 256,
+            Memory = 256,
             Essential = true,
             Environment = mastodonContainerEnvVariables,
             PortMappings = inputList[ input streamingContainerportMappingArgs ]
@@ -210,8 +210,8 @@ Container Task Definitions
                 inputList [ input "bash"
                             input "-c"
                             input "bundle exec sidekiq" ],
-            Cpu = 512,
-            Memory = 512,
+            Cpu = 256,
+            Memory = 256,
             Environment = mastodonContainerEnvVariables,
             Essential = true
         )
