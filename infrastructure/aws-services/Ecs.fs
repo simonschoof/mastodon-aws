@@ -174,7 +174,7 @@ Container Task Definitions
         
         let webContainer =
             Awsx.Ecs.Inputs.TaskDefinitionContainerDefinitionArgs(
-                Image = "tootsuite/mastodon:v4.1.0",
+                Image = "tootsuite/mastodon:v4.1.1",
                 Command = webContainerCommand,
                 Cpu = 256,
                 Memory = 512,
@@ -190,7 +190,7 @@ Container Task Definitions
             Awsx.Ecs.Inputs.TaskDefinitionPortMappingArgs(ContainerPort = 4000, TargetGroup = streamingTargetGroup)
 
         let streamingContainer = Awsx.Ecs.Inputs.TaskDefinitionContainerDefinitionArgs(
-            Image = "tootsuite/mastodon:v4.1.0",
+            Image = "tootsuite/mastodon:v4.1.1",
             Command =
                 inputList [ input "bash"
                             input "-c"
@@ -205,7 +205,7 @@ Container Task Definitions
         containerDefinitionsList.Add(prefixMastodonResource "streaming",streamingContainer)
 
         let sidekiqContainer = Awsx.Ecs.Inputs.TaskDefinitionContainerDefinitionArgs(
-            Image = "tootsuite/mastodon:v4.1.0",
+            Image = "tootsuite/mastodon:v4.1.1",
             Command =
                 inputList [ input "bash"
                             input "-c"
