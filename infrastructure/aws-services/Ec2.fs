@@ -28,8 +28,7 @@ Vpc and subnets
     let defaultSubnetIds = 
         let mutable numberOfSubnets = 0
         defaultSubnets.Apply(fun subnets -> numberOfSubnets <- subnets.Ids.Length) |> ignore
-        seq { for i in 0 .. numberOfSubnets do yield defaultSubnets.Apply(fun subnets -> subnets.Ids.[i]) } |> List.ofSeq
-
+        List.init numberOfSubnets (fun n -> defaultSubnets.Apply(fun subnets -> subnets.Ids.[n]))
         (*
 ----------------------------------------
 Security groups
