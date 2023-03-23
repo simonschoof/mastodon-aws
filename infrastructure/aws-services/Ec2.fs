@@ -25,10 +25,13 @@ Vpc and subnets
 
         GetSubnets.Invoke(subnetInvokeArgs)
 
-    let defaultSubnetIds =
-        [ defaultSubnets.Apply(fun subnets -> subnets.Ids[0])
-          defaultSubnets.Apply(fun subnets -> subnets.Ids[1])
-          defaultSubnets.Apply(fun subnets -> subnets.Ids[2]) ]
+    let mutable numberOfSubnets = 0
+    
+    defaultSubnets.Apply(fun subnets -> numberOfSubnets <- subnets.Ids.Length) |> ignore
+    
+    let defaultSubnetIds = 
+        seq { for i in 0 .. numberOfSubnets do yield defaultSubnets.Apply(fun subnets -> subnets.Ids.[i]) } |> List.ofSeq
+
 
         (*
 ----------------------------------------
