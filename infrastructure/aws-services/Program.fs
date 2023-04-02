@@ -8,10 +8,10 @@ open Pulumi.FSharp
 
 let infra () =
 
-  createBucketAndDistribution() 
-  createRdsCluster()
-  createElastiCacheCluster()
-  createEcs()
+  createBucketAndDistribution () 
+  createRdsCluster ()
+  createElastiCacheCluster ()
+  createEcs ()
   
   dict []
 
