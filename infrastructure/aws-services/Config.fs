@@ -58,8 +58,9 @@ module Values =
         | Maintenance
         | Debug 
 
-    let awsConfig = Config("aws");
     let runMode = Production
+    let awsConfig = Config("aws");
+    let mastodonImage = "tootsuite/mastodon:v4.1.2"
     // Pulumi
     let mastodonResourcePrefix = "mastodon-"
     let prefixMastodonResource resourceNameToPrefix= mastodonResourcePrefix + resourceNameToPrefix  

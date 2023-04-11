@@ -6,7 +6,6 @@ module Rds =
     open Pulumi.Aws.Rds
     open Pulumi.Aws.Rds.Inputs
     open Pulumi.FSharp
-    open MastodonAwsServices
     open MastodonAwsServices.Ec2
     open MastodonAwsServices.Config.Values
 

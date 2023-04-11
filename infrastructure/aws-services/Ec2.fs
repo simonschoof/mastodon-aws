@@ -26,9 +26,10 @@ Vpc and subnets
         GetSubnets.Invoke(subnetInvokeArgs)
 
     let defaultSubnetIds = 
-        let mutable numberOfSubnets = 0
-        defaultSubnets.Apply(fun subnets -> numberOfSubnets <- subnets.Ids.Length) |> ignore
-        List.init numberOfSubnets (fun n -> defaultSubnets.Apply(fun subnets -> subnets.Ids.[n]))
+        //let mutable numberOfSubnets = 0
+        //let getSubnets = defaultSubnets.Apply(fun subnets -> numberOfSubnets <- subnets.Ids.Length)
+        //printfn "Number of subnets: %i" numberOfSubnets
+        List.init 3 (fun n -> defaultSubnets.Apply(fun subnets -> subnets.Ids.[n]))
         (*
 ----------------------------------------
 Security groups
