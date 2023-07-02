@@ -56,13 +56,17 @@ and Listener and Listene rules
 
         let loadBalancer = LoadBalancer(prefixMastodonResource "load-balancer", loadBalancerArgs)
 
+        let healthCheckEnabled = match runMode with 
+                                | Production -> true
+                                | _ -> true
+
         let webTargetGroupArgs =
             TargetGroupArgs(
                 TargetType = "ip",
                 Port = 3000,
                 Protocol = "HTTP",
                 VpcId = defaultVpc.Id,
-                HealthCheck = TargetGroupHealthCheckArgs(Interval = 30, Path = "/health")
+                HealthCheck = TargetGroupHealthCheckArgs(Enabled = healthCheckEnabled, Interval = 30, Path = "/health")
                 )
 
         let webTargetGroup = TargetGroup(prefixMastodonResource "web-tg", webTargetGroupArgs)
